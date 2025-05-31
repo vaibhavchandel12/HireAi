@@ -1,0 +1,99 @@
+/* Gradient background and centering */
+.container {
+    position: fixed;               /* Takes full viewport */
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    display: flex;                 /* Flexbox to center */
+    align-items: center;          /* Vertical center */
+    justify-content: center;      /* Horizontal center */
+    background: linear-gradient(to bottom right, #6366f1, #a855f7, #ec4899);
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  
+  
+  /* Card */
+  .card {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    padding: 40px;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  /* Title */
+  .title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 25px;
+  }
+  
+  /* Input fields */
+  .input-group {
+    margin-bottom: 18px;
+  }
+  
+  .input-group label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #555;
+  }
+  
+  .input-group input {
+    width: 80%;
+    padding: 10px 14px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    font-size: 14px;
+    background-color: white;     /* 👈 Make input background white */
+    color: #000;                 /* 👈 Make text inside input black */
+    outline: none;
+  }
+  
+  
+  .input-group input:focus {
+    border-color: #6366f1;
+  }
+  
+  /* Button */
+  .btn {
+    width: 100%;
+    background-color: #6366f1;
+    color: #fff;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  
+  .btn:hover {
+    background-color: #4f46e5;
+  }
+  
+  /* Toggle link */
+  .toggle-text {
+    margin-top: 20px;
+    text-align: center;
+    font-size: 14px;
+    color: #555;
+  }
+  
+  .toggle-btn {
+    background: none;
+    border: none;
+    color: #6366f1;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: underline;
+    margin-left: 4px;
+  }
+  
