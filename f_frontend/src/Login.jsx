@@ -30,19 +30,42 @@ export default function Login() {
 
     setIsLoading(true);
     try {
-      const endpoint = isLogin
-        ? "http://localhost:5000/login"
-        : "http://localhost:5000/register";
-      const response = await axios.post(endpoint, formData);
-      setMessage({ text: response.data.message, type: "success" });
+      if (isLogin) {
+        // ── Login ──────────────────────────────────────────────
+        const response = await axios.post("http://localhost:5000/login", formData);
+        setMessage({ text: response.data.message, type: "success" });
 
-      if (response.status === 200) {
-        localStorage.setItem("email", response.data.email);
+        // Store user info in localStorage for use across pages
+        localStorage.setItem("email",   response.data.email);
+        localStorage.setItem("user_id", response.data.user_id);
+        localStorage.setItem("user", JSON.stringify({
+          email:  response.data.email,
+          name:   response.data.name   || "",
+          role:   response.data.role   || "",
+          phone:  response.data.phone  || "",
+          avatar: response.data.avatar || "",
+          _id:    response.data.user_id,
+        }));
+
         navigate("/dashboard");
+
+      } else {
+        // ── Register ───────────────────────────────────────────
+        const response = await axios.post("http://localhost:5000/register", formData);
+        // 201 = created successfully
+        setMessage({
+          text: response.data.message || "Account created! Please check your email to verify.",
+          type: "success",
+        });
+        // Switch to login mode after successful registration
+        setTimeout(() => {
+          setIsLogin(true);
+          setFormData({ name: "", email: formData.email, password: "" });
+        }, 2000);
       }
     } catch (error) {
       setMessage({
-        text: error.response?.data?.error || "Something went wrong.",
+        text: error.response?.data?.error || "Something went wrong. Please try again.",
         type: "error",
       });
     } finally {
