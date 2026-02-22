@@ -1,0 +1,11 @@
+flask>=3.0
+flask-cors>=4.0
+supabase>=2.4
+python-dotenv>=1.0
+pymupdf>=1.24
+python-docx>=1.1
+langchain-google-genai>=1.0
+langchain-core>=0.2
+gTTS>=2.5
+werkzeug>=3.0
+gunicorn>=21.0

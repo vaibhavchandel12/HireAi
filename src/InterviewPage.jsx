@@ -15,35 +15,23 @@ const InterviewPage = () => {
   const [interviewStarted, setInterviewStarted] = useState(false);
   const [interviewComplete, setInterviewComplete] = useState(false);
   const [showNext, setShowNext] = useState(false);
+  const currentAudioRef = useRef(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [recognitionStatus, setRecognitionStatus] = useState("");
-  
-  const recognitionRef = useRef(null);
-  const currentAudioRef = useRef(null);
+  const [user, setUser] = useState({
+    name: "John Doe",
+    email: "john.doe@example.com",
+    role: "Candidate",
+    avatar: "https://via.placeholder.com/150",
+  }); // Static user data
+
   const speechQueue = useRef([]);
   const isAudioPlaying = useRef(false);
-
-  const videoRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const recordedChunks = useRef([]);
-
-  // Dummy user info
-  const [user] = useState({
-    name: "Vaibhav",
-    email: "john.doe@example.com",
-    role: "web developer",
-    avatar: "https://via.placeholder.com/150",
-  });
 
   useEffect(() => {
     const id = getOrCreateSessionId();
     setSessionId(id);
   }, []);
-
-  useEffect(() => {
-    if (interviewStarted) startRecording();
-  }, [interviewStarted]);
 
   const playSpeech = (text) => {
     speechQueue.current.push(text);
@@ -68,7 +56,7 @@ const InterviewPage = () => {
       .then((blob) => {
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
-        currentAudioRef.current = audio;
+         currentAudioRef.current = audio;
         audio.play();
         audio.onended = () => {
           isAudioPlaying.current = false;
@@ -98,7 +86,6 @@ const InterviewPage = () => {
         playSpeech(data.question);
       } else if (data.message === "Interview complete") {
         setInterviewComplete(true);
-        stopRecording();
       }
     } catch (error) {
       console.error("Error fetching next question:", error);
@@ -119,7 +106,7 @@ const InterviewPage = () => {
       if (res.ok) {
         setFeedback(data.feedback);
         setShowNext(true);
-        setResponse("");
+        setResponse(""); // Clear input area after submitting response
       } else {
         alert(data.error);
       }
@@ -130,10 +117,11 @@ const InterviewPage = () => {
   };
 
   const toggleMenu = () => {
-    setMenuOpen(!menuOpen);
+    setMenuOpen(!menuOpen); // Toggle the menu open/close
   };
 
-  const endInterview = () => {
+const endInterview = () => {
+    // ✅ Stop and clear audio playback
     speechQueue.current = [];
     isAudioPlaying.current = false;
 
@@ -143,197 +131,23 @@ const InterviewPage = () => {
       currentAudioRef.current = null;
     }
 
+    // Clear UI state
     setQuestion("");
     setResponse("");
     setShowNext(false);
     setInterviewStarted(false);
     setInterviewComplete(true);
     setShowFeedback(true);
-    stopRecording();
   };
 
-  const initSpeechRecognition = () => {
-    if (!("webkitSpeechRecognition" in window)) {
-      setRecognitionStatus("Speech recognition not supported in this browser.");
-      return;
-    }
-
-    const recognition = new window.webkitSpeechRecognition();
-    recognition.lang = "en-US";
-    recognition.continuous = false;
-    recognition.interimResults = false;
-
-    recognition.onstart = () => {
-      setRecognitionStatus("Listening...");
-    };
-
-    recognition.onresult = (event) => {
-      const transcript = event.results[0][0].transcript;
-      setRecognitionStatus(`You said: "${transcript}"`);
-      setResponse(transcript);
-      // Optionally auto-submit:
-      // submitResponse();
-    };
-
-    recognition.onerror = (event) => {
-      setRecognitionStatus(`Error: ${event.error}`);
-    };
-
-    recognition.onend = () => {
-      setRecognitionStatus((prev) =>
-        prev.includes("You said") ? prev : "Speech recognition ended."
-      );
-    };
-
-    recognitionRef.current = recognition;
-    recognition.start();
-  };
-
-  const startRecording = async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      if (videoRef.current) videoRef.current.srcObject = stream;
-
-      const recorder = new MediaRecorder(stream);
-      recordedChunks.current = [];
-
-      recorder.ondataavailable = (e) => {
-        if (e.data.size > 0) recordedChunks.current.push(e.data);
-      };
-
-      recorder.onstop = () => {
-        const blob = new Blob(recordedChunks.current, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        console.log("Interview video recorded:", url);
-        // You can upload the video to backend or allow user to download it here
-      };
-
-      recorder.start();
-      mediaRecorderRef.current = recorder;
-    } catch (err) {
-      console.error("Failed to access media devices:", err);
-      alert("Could not access camera/microphone.");
-    }
-  };
-
-  const stopRecording = () => {
-    if (
-      mediaRecorderRef.current &&
-      mediaRecorderRef.current.state !== "inactive"
-    ) {
-      mediaRecorderRef.current.stop();
-    }
-    if (videoRef.current?.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-    }
-  };
 
   return (
     <>
-      <nav className="navbar">
-        <div className="nav-left">InterviewAi</div>
-        <div className="nav-right">
-          <FontAwesomeIcon
-            icon={faUser}
-            className="profile-icon"
-            onClick={toggleMenu}
-          />
-          {menuOpen && (
-            <div className="dropdown-menu">
-              <ul>
-                <li onClick={() => navigate("/profile")}>My Profile</li>
-                <li onClick={() => navigate("/login")}>Logout</li>
-              </ul>
-            </div>
-          )}
-        </div>
-      </nav>
-
-      <div className="interview-container">
-        <div className="top-section">
-          <div className="interviewer-section">
-            <img
-              src="avatar.jpg"
-              alt="Interviewer Avatar"
-              className="avatar-image"
-            />
-            <p className="interviewer-name">AI Interviewer</p>
-            {interviewStarted ? (
-              <div>
-                <strong>Question:</strong> {question || "Loading..."}
-              </div>
-            ) : (
-              <button
-                onClick={() => {
-                  setInterviewStarted(true);
-                  fetchNextQuestion();
-                }}
-              >
-                Start Interview
-              </button>
-            )}
-          </div>
-
-          <div className="candidate-section">
-            <img
-              src="profile.jpg"
-              alt="Candidate Avatar"
-              className="candidate-photo"
-            />
-            <h2 className="candidate-name">{user.name}</h2>
-            <p className="candidate-role">{user.role}</p>
-
-            <video ref={videoRef} autoPlay muted className="video-preview" />
-
-            {interviewStarted && !interviewComplete && (
-              <>
-                <input
-                  type="text"
-                  value={response}
-                  onChange={(e) => setResponse(e.target.value)}
-                  placeholder="Your answer..."
-                />
-                <button onClick={submitResponse}>Submit Answer</button>
-                <button onClick={initSpeechRecognition}>🎙 Speak Answer</button>
-                <p>{recognitionStatus}</p>
-                {showNext && (
-                  <button onClick={fetchNextQuestion}>Next Question</button>
-                )}
-              </>
-            )}
-
-            {interviewComplete && (
-              <div className="feedback-container complete">
-                <p className="message">Interview complete</p>
-                <p className="thank-you">Thank you for participating!</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        <div className="middle-button-container">
-          <button className="end-button" onClick={endInterview}>
-            End Interview
-          </button>
-        </div>
-
-        {showFeedback && (
-          <div className="feedback-container">
-            <h3>Feedback:</h3>
-            <p>{feedback}</p>
-          </div>
-        )}
-      </div>
-
       <style>{`
         html, body {
+          height: 100%;
           margin: 0;
           padding: 0;
-          font-family: Arial, sans-serif;
-          background-color: #f0f2f5;
         }
 
         .navbar {
@@ -355,6 +169,10 @@ const InterviewPage = () => {
           font-weight: bold;
         }
 
+        .nav-right {
+          position: relative;
+        }
+
         .profile-icon {
           font-size: 24px;
           cursor: pointer;
@@ -364,156 +182,244 @@ const InterviewPage = () => {
           position: absolute;
           top: 35px;
           right: 0;
-          background: white;
-          border-radius: 8px;
+          background-color: white;
+          color: black;
           box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+          border-radius: 8px;
+          padding: 10px 0;
           width: 150px;
+        }
+
+        .dropdown-menu ul {
+          list-style: none;
+          padding: 0;
+          margin: 0;
         }
 
         .dropdown-menu li {
           padding: 10px 20px;
           cursor: pointer;
-          list-style: none;
         }
 
         .dropdown-menu li:hover {
-          background: #f1f1f1;
+          background-color: #f1f1f1;
         }
 
         .interview-container {
-          margin-top: 60px;
-          padding: 20px;
-          background: linear-gradient(#e0f2ff, #e5e9ff);
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
           min-height: 100vh;
+          width: 100%;
+          background: linear-gradient(#e0f2ff, #e5e9ff);
+          padding: 20px;
+          box-sizing: border-box;
         }
 
         .top-section {
           display: flex;
-          gap: 40px;
           justify-content: center;
-          flex-wrap: wrap;
-        }
-
-        .interviewer-section,
-        .candidate-section {
-          background: white;
-          padding: 20px;
-          border-radius: 20px;
-          box-shadow: 0 4px 12px rgba(75, 79, 187, 0.1);
-          width: 320px;
-          text-align: center;
-        }
-
-        .avatar-image,
-        .candidate-photo {
-          width: 150px;
-          height: 150px;
-          border-radius: 50%;
-          object-fit: cover;
-          margin-bottom: 15px;
-          box-shadow: 0 2px 10px rgba(75, 79, 187, 0.2);
-        }
-
-        .interviewer-name {
-          font-weight: bold;
-          font-size: 22px;
-          margin-bottom: 20px;
-        }
-
-        .candidate-name {
-          font-weight: 600;
-          font-size: 24px;
-          margin: 5px 0;
-        }
-
-        .candidate-role {
-          font-style: italic;
-          color: #555;
-          margin-bottom: 15px;
-        }
-
-        input[type="text"] {
+          gap: 40px;
           width: 90%;
-          padding: 8px;
-          border-radius: 8px;
-          border: 1px solid #ccc;
-          font-size: 16px;
+          margin-top: 3rem;
+        }
+
+        .interviewer-section, .candidate-section {
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          align-items: center;
+          width: 40%;
+          padding: 20px;
+          background: #fff;
+          border-radius: 20px;
+          box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+          text-align: center;
+          margin-top: 2rem;
+        }
+
+        .avatar-image, .candidate-photo {
+          width: 180px;
+          height: 180px;
+          border-radius: 50%;
+          border: 5px solid #8bc8ff;
+          object-fit: cover;
           margin-bottom: 10px;
         }
 
+        .candidate-name, .interviewer-name {
+          font-size: 30px;
+          font-weight: bold;
+          color: #4b4fbb;
+          margin-top: 15px;
+        }
+
+        input[type="text"] {
+          margin: 10px 0;
+          padding: 10px;
+          width: 100%;
+          max-width: 300px;
+          border-radius: 8px;
+          border: 1px solid #ccc;
+        }
+
         button {
+          margin-top: 10px;
+          padding: 10px 20px;
+          font-size: 16px;
+          border-radius: 8px;
+          border: none;
+          cursor: pointer;
           background-color: #4b4fbb;
           color: white;
-          border: none;
-          border-radius: 12px;
-          padding: 10px 18px;
-          cursor: pointer;
-          font-weight: 600;
-          margin: 5px;
-          transition: background-color 0.3s ease;
-        }
-
-        button:hover {
-          background-color: #3a3f99;
-        }
-
-        .video-preview {
-          width: 100%;
-          max-height: 240px;
-          border-radius: 16px;
-          margin-bottom: 15px;
-          border: 2px solid #4b4fbb;
-          background-color: black;
         }
 
         .middle-button-container {
-          text-align: center;
-          margin: 30px 0;
+          margin-top: 3rem;
+          display: flex;
+          justify-content: center;
         }
 
         .end-button {
-          background-color: #e25e5e;
-          padding: 12px 24px;
+          background-color: #e74c3c;
+          color: white;
+          padding: 15px 30px;
           font-size: 18px;
-          border-radius: 16px;
-          font-weight: 700;
-          box-shadow: 0 8px 16px rgba(226, 94, 94, 0.5);
+          font-weight: bold;
+          border-radius: 10px;
+          cursor: pointer;
           transition: background-color 0.3s ease;
         }
 
         .end-button:hover {
-          background-color: #c74545;
+          background-color: #c0392b;
         }
 
         .feedback-container {
-          background: white;
-          max-width: 700px;
-          margin: 0 auto;
-          padding: 20px 25px;
-          border-radius: 20px;
-          box-shadow: 0 6px 20px rgba(75, 79, 187, 0.1);
+          background: #fff;
+          padding: 20px;
+          border-radius: 10px;
+          box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+          width: 80%;
+          margin: 20px auto;
           text-align: center;
+          height: auto;
         }
 
         .feedback-container.complete {
-          background-color: #4b4fbb;
-          color: white;
-          font-weight: 700;
-          font-size: 20px;
-          padding: 30px 20px;
-        }
+  border: 2px solid #4CAF50; /* Green border */
+  background-color: #e9f7e9; /* Light green background */
+}
 
-        .message {
-          margin-bottom: 20px;
-        }
+.feedback-container.in-progress {
+  border: 2px solid #FFC107; /* Yellow border */
+  background-color: #fff8e1; /* Light yellow background */
+}
 
-        .thank-you {
-          font-weight: 400;
-          font-style: italic;
-        }
+.feedback-container .message {
+  font-size: 20px;
+  font-weight: bold;
+  color: #4b4fbb;
+}
+
+.feedback-container .thank-you {
+  font-size: 16px;
+  color: #4CAF50;
+  margin-top: 10px;
+}
+
+
+}
       `}</style>
+
+      {/* Navbar */}
+      <nav className="navbar">
+        <div className="nav-left" style={{ color: "white" }}>InterviewAi</div>
+        <div className="nav-right">
+          <FontAwesomeIcon icon={faUser} className="profile-icon" onClick={toggleMenu} />
+          {menuOpen && (
+            <div className="dropdown-menu">
+              <ul>
+                <li onClick={() => navigate("/profile")}>My Profile</li>
+                <li onClick={() => navigate("/login")}>Logout</li>
+              </ul>
+            </div>
+          )}
+        </div>
+      </nav>
+
+      <div className="interview-container">
+        <div className="top-section">
+          <div className="interviewer-section">
+            <img src="avatar.jpg" alt="Interviewer Avatar" className="avatar-image" />
+            <p className="interviewer-name">AI Interviewer</p>
+            {interviewStarted ? (
+              <div className="interview-text">
+                <strong>Question:</strong> {question || "Loading..."}
+              </div>
+            ) : (
+              <button
+                onClick={() => {
+                  setInterviewStarted(true);
+                  fetchNextQuestion();
+                }}
+              >
+                Start Interview
+              </button>
+            )}
+          </div>
+
+          <div className="candidate-section">
+            {user && (
+              <>
+                <img src="profile.png" alt="Candidate Avatar" className="candidate-photo" />
+                <h2 className="candidate-name">surbhi</h2>
+                <p className="candidate-role">web developer</p>
+              </>
+            )}
+
+            {interviewStarted && !interviewComplete && (
+              <>
+                <input
+                  type="text"
+                  value={response}
+                  onChange={(e) => setResponse(e.target.value)}
+                  placeholder="Your answer..."
+                  style={{ color: "black" }}
+                />
+                <button onClick={submitResponse}>Submit Answer</button>
+                {showNext && (
+                  <button onClick={fetchNextQuestion}>Next Question</button>
+                )}
+              </>
+            )}
+
+           {interviewComplete && (
+  <div className={`feedback-container ${interviewComplete ? "complete" : "in-progress"}`}>
+    <p className="message">Interview complete</p>
+    <p className="thank-you">Thank you for participating!</p>
+  </div>
+)}
+          </div>
+        </div>
+
+        <div className="middle-button-container">
+          <button className="end-button" onClick={endInterview}>
+            End Interview
+          </button>
+        </div>
+
+        {showFeedback && (
+          <div className="feedback-container">
+            <h3>Feedback:</h3>
+            <p>{feedback}</p>
+          </div>
+        )}
+      </div>
     </>
   );
 };
 
 export default InterviewPage;
+
