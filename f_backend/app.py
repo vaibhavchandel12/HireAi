@@ -17,7 +17,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": os.getenv("FRONTEND_URL", "http://localhost:5173")}})
+CORS(app, resources={r"/*": {"origins": [
+    os.getenv("FRONTEND_URL", "http://localhost:5173"),
+    "https://hireai-10.vercel.app",   # add your actual vercel domain
+]}})
 
 # ─── Supabase Setup ────────────────────────────────────────────────────────────
 # ⚠️  IMPORTANT: SUPABASE_SERVICE_KEY must be the service_role key (starts with "eyJ...").
