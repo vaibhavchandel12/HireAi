@@ -19,7 +19,10 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": [
     os.getenv("FRONTEND_URL", "http://localhost:5173"),
-    "https://hireai-10.vercel.app",   # add your actual vercel domain
+    "https://hireai-10.vercel.app",
+    "https://interviewsystem-sigma.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
 ]}})
 
 # ─── Supabase Setup ────────────────────────────────────────────────────────────
