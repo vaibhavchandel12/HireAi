@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND_URL = "http://localhost:5000";
+const BACKEND_URL = "https://hireai-2-0.onrender.com";
 
 const InterviewPage = () => {
   const navigate = useNavigate();

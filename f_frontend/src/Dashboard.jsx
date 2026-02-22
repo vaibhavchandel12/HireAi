@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./Dashboard.css";
 import { useNavigate } from "react-router-dom";
 
-const BACKEND_URL = "https://hireai-2-0.onrender.com";
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "https://hireai-2-0.onrender.com";
 
 const interviewRoles = [
   { name: "Software Developer",   desc: "Core CS fundamentals, algorithms, system design, and problem solving.",        badge: "badge-teal",   label: "General",    time: "45 min" },

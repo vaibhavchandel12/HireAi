@@ -32,7 +32,7 @@ export default function Login() {
     try {
       if (isLogin) {
         // ── Login ──────────────────────────────────────────────
-        const response = await axios.post("http://localhost:5000/login", formData);
+        const response = await axios.post("https://hireai-2-0.onrender.com/login", formData);
         setMessage({ text: response.data.message, type: "success" });
 
         // Store user info in localStorage for use across pages
@@ -51,7 +51,7 @@ export default function Login() {
 
       } else {
         // ── Register ───────────────────────────────────────────
-        const response = await axios.post("http://localhost:5000/register", formData);
+        const response = await axios.post("https://hireai-2-0.onrender.com/register", formData);
         // 201 = created successfully
         setMessage({
           text: response.data.message || "Account created! Please check your email to verify.",
@@ -75,7 +75,7 @@ export default function Login() {
 
   const handleGoogleLogin = () => {
     // Redirect to your backend Google OAuth route
-    window.location.href = "http://localhost:5000/auth/google";
+    window.location.href = "https://hireai-2-0.onrender.com/auth/google";
   };
 
   return (
