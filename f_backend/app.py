@@ -17,12 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": [
-    os.getenv("FRONTEND_URL", "http://localhost:5173"),
-    "https://interviewsystem-sigma.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000",
-]}})
+CORS(app, resources={r"/*": {"origins": "*"}})
 
 # ─── Supabase Setup ────────────────────────────────────────────────────────────
 # ⚠️  IMPORTANT: SUPABASE_SERVICE_KEY must be the service_role key (starts with "eyJ...").
