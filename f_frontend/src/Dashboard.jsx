@@ -37,6 +37,12 @@ export default function Dashboard() {
   const [jobDetails, setJobDetails]         = useState({ role: "", tools: "", experience: "" });
   const [user, setUser]                     = useState({ name: "", email: "", avatar: "", _id: "" });
 
+  // ── Wake up Render backend on mount ──────────────────────────
+  useEffect(() => {
+    fetch("https://hireai-2-0.onrender.com/")
+      .catch(() => {}); // ignore errors — just waking up Render
+  }, []);
+
   useEffect(() => {
     // ── Load user from localStorage (set during login) ──────────
     try {
