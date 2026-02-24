@@ -438,5 +438,10 @@ def text_to_speech():
         return jsonify({"error": f"TTS failed: {e}"}), 500
 
 
+@app.route("/")
+def health():
+    return jsonify({"status": "ok"}), 200
+
+
 if __name__ == "__main__":
     app.run(debug=True, port=5000)
