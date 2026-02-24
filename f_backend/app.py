@@ -35,7 +35,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config["UPLOAD_FOLDER"] = UPLOAD_FOLDER
 
 # ─── Gemini / LangChain Setup ──────────────────────────────────────────────────
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "AIzaSyCWG34wkYzuCEXmIxkvZjTMEPxW7NK49fY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 chat_model = ChatGoogleGenerativeAI(
     api_key=GEMINI_API_KEY, model="gemini-2.5-flash-lite", temperature=0.6
 )
